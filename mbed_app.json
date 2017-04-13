@@ -1,0 +1,13 @@
+{
+    "config": {
+    },
+    "macros": [],
+    "target_overrides": {
+        "NUMAKER_PFM_NUC472": {
+            "NUC472.gpio-irq-debounce-enable": 1
+        },
+        "NUMAKER_PFM_M453": {
+            "M451.gpio-irq-debounce-enable": 1
+        }
+    }
+}
