@@ -1,6 +1,6 @@
 #include "mbed.h"
 
-#define MYCONF_TRAN_UNIT_T          uint8_t
+#define MYCONF_TRAN_UNIT_T          uint32_t
 #define MYCONF_BITS_TRAN_UNIT_T     (sizeof (MYCONF_TRAN_UNIT_T) * 8)
 #define MYCONF_DMA_USAGE            DMA_USAGE_NEVER
 //DMA_USAGE_NEVER,DMA_USAGE_ALWAYS
@@ -8,6 +8,8 @@
 
 // SPI
 #define MYCONF_SPI_AUTOSS           0
+// NOTE: With NANO130 as SPI slave, CS# Deselect Time (tSHSL) is required.
+#define MYCONF_SPI_tSHSL_US         5
 #define MYCONF_SPI_ECHO_PLUS        5
 // I2C
 #define MYCONF_I2C_ADDR             (0x90)
@@ -67,6 +69,24 @@
 #define BTN1        NC
 #define BTN2        NC
 
+#elif defined(TARGET_NUMAKER_PFM_NANO130)
+//Serial
+#define SERIAL_RX   PB_0
+#define SERIAL_TX   PB_1
+#define SERIAL_CTS  NC
+#define SERIAL_RTS  NC
+// SPI
+#define SPI_MOSI    PE_4
+#define SPI_MISO    PE_3
+#define SPI_SCLK    PE_2
+#define SPI_SSEL    PE_1
+// I2C
+#define I2C_SDA     PA_8
+#define I2C_SCL     PA_9
+// InterruptIn
+#define BTN1        NC
+#define BTN2        NC
+
 #endif
 
 static void test_serial_tx_async(void);
@@ -112,10 +132,10 @@ int main()
     //test_serial_rx_async();
     //test_spi_master();
     //test_spi_master_async();
-    //test_spi_slave();
+    test_spi_slave();
     //test_i2c_master();
     //test_i2c_master_async();
-    test_i2c_slave();
+    //test_i2c_slave();
     //test_interruptin();
 }
 
@@ -196,6 +216,8 @@ void test_serial_async_callback(int event)
     my_serial_event = event;
 }
 
+#if DEVICE_SPI
+
 static void test_spi_master(void)
 {
 #if MYCONF_SPI_AUTOSS
@@ -223,14 +245,16 @@ REPEAT:
     for (int i = 0; i < 30; i ++) {
 #if (! MYCONF_SPI_AUTOSS)
         cs = 0;
-        //TESTTEST
-        //wait_ms(1);
+#if MYCONF_SPI_tSHSL_US
+        wait_us(MYCONF_SPI_tSHSL_US);
+#endif
 #endif
         res = spi_master.write(data);
 #if (! MYCONF_SPI_AUTOSS)
         cs = 1;
-        //TESTTEST
-        //wait_ms(1);
+#if MYCONF_SPI_tSHSL_US
+        wait_us(MYCONF_SPI_tSHSL_US);
+#endif
 #endif
 
         if (i >= 2 && res != (data + MYCONF_SPI_ECHO_PLUS - 2)) {
@@ -259,7 +283,7 @@ static void test_spi_master_async(void)
     
     // With NUMAKER-PFM-NUC472 as SPI slave, test fails with default 1 MHz SPI clock.
     spi_master.frequency(500000);
-
+    
     spi_master.set_dma_usage(MYCONF_DMA_USAGE);
     spi_master.format(MYCONF_BITS_TRAN_UNIT_T);    // n bits per SPI frame
     // Fill in transmit buffer
@@ -280,6 +304,9 @@ REPEAT:
     
 #if (! MYCONF_SPI_AUTOSS)
     cs = 0;
+#if MYCONF_SPI_tSHSL_US
+    wait_us(MYCONF_SPI_tSHSL_US);
+#endif
 #endif
 
     callback_event = 0;
@@ -296,7 +323,10 @@ REPEAT:
     while (callback_event == 0);
     
 #if (! MYCONF_SPI_AUTOSS)
-        cs = 1;
+    cs = 1;
+#if MYCONF_SPI_tSHSL_US
+    wait_us(MYCONF_SPI_tSHSL_US);
+#endif
 #endif
 
     if (callback_event & SPI_EVENT_ERROR) {
@@ -352,6 +382,7 @@ static void test_spi_slave(void)
     }
 }
 
+#endif  // #if DEVICE_SPI
 
 static void test_i2c_master(void)
 {
