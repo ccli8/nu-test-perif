@@ -7,9 +7,9 @@
 #define MYCONF_DEBUG                1
 
 // SPI
-#define MYCONF_SPI_AUTOSS           0
-// NOTE: With NANO130 as SPI slave, CS# Deselect Time (tSHSL) is required.
-#define MYCONF_SPI_tSHSL_US         5
+#define MYCONF_SPI_AUTOSS           1
+// NOTE: CS# Deselect Time (tSHSL)
+#define MYCONF_SPI_tSHSL_US         0
 #define MYCONF_SPI_ECHO_PLUS        5
 // I2C
 #define MYCONF_I2C_ADDR             (0x90)
@@ -131,8 +131,8 @@ int main()
     //test_serial_tx_async();
     //test_serial_rx_async();
     //test_spi_master();
-    //test_spi_master_async();
-    test_spi_slave();
+    test_spi_master_async();
+    //test_spi_slave();
     //test_i2c_master();
     //test_i2c_master_async();
     //test_i2c_slave();
