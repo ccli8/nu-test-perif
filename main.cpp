@@ -170,6 +170,7 @@ static void test_serial_tx_attach(void)
 
 static void test_serial_rx_attach(void)
 {
+    // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_rx_callback, &my_serial);
@@ -182,6 +183,7 @@ static void test_serial_rx_attach(void)
 
 static void test_serial_txrx_attach(void)
 {
+    // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> tx_callback(&serial_tx_callback, &my_serial);
@@ -201,8 +203,9 @@ static void serial_tx_callback(RawSerial *serial)
 
 static void serial_rx_callback(RawSerial *serial)
 {
+    // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
     led3 = ! led3;
-    // NOTE: On Nuvoton targets, no H/W IRQ to match RxIrq. Simulation of RxIrq requires the call to Serial::getc(). 
+    // NOTE: On Nuvoton targets, no H/W IRQ to match RxIrq. Simulation of RxIrq requires the call to Serial::getc().
     serial->putc(serial->getc());
 }
 
