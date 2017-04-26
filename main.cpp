@@ -53,10 +53,10 @@
 
 #elif defined(TARGET_NUMAKER_PFM_M487)
 //Serial
-#define SERIAL_RX   PG_7
-#define SERIAL_TX   PG_8
-#define SERIAL_CTS  PA_2
-#define SERIAL_RTS  PA_3
+#define SERIAL_RX   PH_8
+#define SERIAL_TX   PH_9
+#define SERIAL_CTS  PB_10
+#define SERIAL_RTS  PB_9
 // SPI
 #define SPI_MOSI    PD_9
 #define SPI_MISO    PD_1
@@ -136,10 +136,10 @@ int main()
 {
     //test_serial_tx_attach();
     //test_serial_rx_attach();
-    test_serial_txrx_attach();
+    //test_serial_txrx_attach();
     //test_serial_tx_async();
     //test_serial_rx_async();
-    //test_serial_tx_async_n_tx_attach();
+    test_serial_tx_async_n_tx_attach();
     //test_spi_master();
     //test_spi_master_async();
     //test_spi_slave();
@@ -216,8 +216,8 @@ static void test_serial_tx_async(void)
     
 REPEAT:
     my_serial_event = 0;
-    //my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
-    my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
+    my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
+    //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
     
     //my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
     
@@ -241,8 +241,8 @@ static void test_serial_rx_async(void)
 REPEAT:
     my_serial_event = 0;
     memset(serial_buf_rx, 0x00, sizeof (serial_buf_rx));
-    //my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
-    my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
+    my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
+    //my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
     
     //my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
     
