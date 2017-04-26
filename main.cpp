@@ -92,8 +92,8 @@
 static void test_serial_tx_attach(void);
 static void test_serial_rx_attach(void);
 static void test_serial_txrx_attach(void);
-static void serial_tx_callback(Serial *serial);
-static void serial_rx_callback(Serial *serial);
+static void serial_tx_callback(RawSerial *serial);
+static void serial_rx_callback(RawSerial *serial);
 static void test_serial_tx_async(void);
 static void test_serial_rx_async(void);
 static void test_serial_tx_async_n_tx_attach(void);
@@ -136,8 +136,8 @@ int main()
 {
     //test_serial_tx_attach();
     //test_serial_rx_attach();
-    //test_serial_txrx_attach();
-    test_serial_tx_async();
+    test_serial_txrx_attach();
+    //test_serial_tx_async();
     //test_serial_rx_async();
     //test_serial_tx_async_n_tx_attach();
     //test_spi_master();
@@ -157,10 +157,10 @@ static volatile int my_serial_event = 0;
 
 static void test_serial_tx_attach(void)
 {
-    static Serial my_serial(SERIAL_TX, SERIAL_RX);
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_tx_callback, &my_serial);
-    my_serial.attach(callback, mbed::Serial::TxIrq);
+    my_serial.attach(callback, mbed::SerialBase::TxIrq);
     
     while (1) {
         my_serial.putc('.');
@@ -170,10 +170,10 @@ static void test_serial_tx_attach(void)
 
 static void test_serial_rx_attach(void)
 {
-    static Serial my_serial(SERIAL_TX, SERIAL_RX);
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_rx_callback, &my_serial);
-    my_serial.attach(callback, mbed::Serial::RxIrq);
+    my_serial.attach(callback, mbed::SerialBase::RxIrq);
     
     while (1) {
         wait(1.0);
@@ -182,24 +182,24 @@ static void test_serial_rx_attach(void)
 
 static void test_serial_txrx_attach(void)
 {
-    static Serial my_serial(SERIAL_TX, SERIAL_RX);
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> tx_callback(&serial_tx_callback, &my_serial);
     Callback<void()> rx_callback(&serial_rx_callback, &my_serial);  
-    my_serial.attach(tx_callback, mbed::Serial::TxIrq);
-    my_serial.attach(rx_callback, mbed::Serial::RxIrq);
+    my_serial.attach(tx_callback, mbed::SerialBase::TxIrq);
+    my_serial.attach(rx_callback, mbed::SerialBase::RxIrq);
     
     while (1) {
         wait(1.0);
     }
 }
 
-static void serial_tx_callback(Serial *serial)
+static void serial_tx_callback(RawSerial *serial)
 {
     led2 = ! led2;
 }
 
-static void serial_rx_callback(Serial *serial)
+static void serial_rx_callback(RawSerial *serial)
 {
     led3 = ! led3;
     // NOTE: On Nuvoton targets, no H/W IRQ to match RxIrq. Simulation of RxIrq requires the call to Serial::getc(). 
@@ -208,7 +208,7 @@ static void serial_rx_callback(Serial *serial)
 
 static void test_serial_tx_async(void)
 {   
-    static Serial my_serial(SERIAL_TX, SERIAL_RX);
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     
 REPEAT:
@@ -232,7 +232,7 @@ REPEAT:
 
 static void test_serial_rx_async(void)
 {   
-    static Serial my_serial(SERIAL_TX, SERIAL_RX);
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     
 REPEAT:
@@ -275,10 +275,10 @@ REPEAT:
 
 void test_serial_tx_async_n_tx_attach(void)
 {
-    static Serial my_serial(SERIAL_TX, SERIAL_RX);
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_tx_callback, &my_serial);
-    my_serial.attach(callback, mbed::Serial::TxIrq);
+    my_serial.attach(callback, mbed::SerialBase::TxIrq);
     
     event_callback_t event_callback(serial_async_callback);
     
