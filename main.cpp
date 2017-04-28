@@ -97,6 +97,8 @@ static void serial_rx_callback(RawSerial *serial);
 static void test_serial_tx_async(void);
 static void test_serial_rx_async(void);
 static void test_serial_tx_async_n_tx_attach(void);
+static void test_serial_rtscts_master(void);
+static void test_serial_rtscts_slave(void);
 static void serial_async_callback(int event);
 static void test_spi_master(void);
 static void test_spi_master_async(void);
@@ -139,7 +141,9 @@ int main()
     //test_serial_txrx_attach();
     //test_serial_tx_async();
     //test_serial_rx_async();
-    test_serial_tx_async_n_tx_attach();
+    //test_serial_tx_async_n_tx_attach();
+    //test_serial_rtscts_master();
+    test_serial_rtscts_slave();
     //test_spi_master();
     //test_spi_master_async();
     //test_spi_slave();
@@ -153,6 +157,7 @@ static char serial_buf_tx[] = "1234567800000000001111111111222222222233333333334
 //static char serial_buf_tx[23] = "12345678901234567890\n\n";
 //static char serial_buf_tx[11] = "123456789\n";
 static char serial_buf_rx[23];
+Semaphore my_serial_sem(0);
 static volatile int my_serial_event = 0;
 
 static void test_serial_tx_attach(void)
@@ -213,8 +218,10 @@ static void test_serial_tx_async(void)
 {   
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
+    int32_t sem_tokens;
     
 REPEAT:
+    sem_tokens = 0;
     my_serial_event = 0;
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
@@ -223,13 +230,18 @@ REPEAT:
     
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_COMPLETE);
     
-    while (! my_serial_event) {
-        wait_ms(200);
+    sem_tokens = my_serial_sem.wait(3000);
+    if (sem_tokens < 1) {
+        printf("Serial Tx async test FAILED with Semaphore.wait(): %d\n", sem_tokens);
     }
-    
-    if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
-        printf("SERIAL_EVENT_TX_COMPLETE event received\n");
-        goto REPEAT;
+    else {
+        if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
+            printf("Serial Tx async test PASSED\n");
+            goto REPEAT;
+        }
+        else {
+            printf("Serial Tx async test FAILED with serial event: %d\n", my_serial_event);
+        }
     }
 }
 
@@ -237,8 +249,10 @@ static void test_serial_rx_async(void)
 {   
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
+    int32_t sem_tokens;
     
 REPEAT:
+    sem_tokens = 0;
     my_serial_event = 0;
     memset(serial_buf_rx, 0x00, sizeof (serial_buf_rx));
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
@@ -249,30 +263,32 @@ REPEAT:
     //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_COMPLETE, SERIAL_RESERVED_CHAR_MATCH);    
     my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_COMPLETE | SERIAL_EVENT_RX_CHARACTER_MATCH, 'q');
     
-    while (! my_serial_event) {
-        wait_ms(200);
+    sem_tokens = my_serial_sem.wait(osWaitForever);
+    if (sem_tokens < 1) {
+        printf("Serial Rx async test FAILED with Semaphore.wait(): %d\n", sem_tokens);
     }
-    
-    if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
-        serial_buf_rx[sizeof (serial_buf_rx) - 1] = 0;
-        printf("%s\n", serial_buf_rx);
-        goto REPEAT;
-    }
-    if (my_serial_event & SERIAL_EVENT_RX_OVERRUN_ERROR) {
-        printf("SERIAL_EVENT_RX_OVERRUN_ERROR\n");
-    }
-    if (my_serial_event & SERIAL_EVENT_RX_FRAMING_ERROR) {
-        printf("SERIAL_EVENT_RX_FRAMING_ERROR\n");
-    }
-    if (my_serial_event & SERIAL_EVENT_RX_PARITY_ERROR) {
-        printf("SERIAL_EVENT_RX_PARITY_ERROR\n");
-    }
-    if (my_serial_event & SERIAL_EVENT_RX_OVERFLOW) {
-        printf("SERIAL_EVENT_RX_OVERFLOW\n");
-    }
-    if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
-        printf("%s\n", serial_buf_rx);
-        goto REPEAT;
+    else {
+        if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
+            serial_buf_rx[sizeof (serial_buf_rx) - 1] = 0;
+            printf("%s\n", serial_buf_rx);
+            goto REPEAT;
+        }
+        if (my_serial_event & SERIAL_EVENT_RX_OVERRUN_ERROR) {
+            printf("SERIAL_EVENT_RX_OVERRUN_ERROR\n");
+        }
+        if (my_serial_event & SERIAL_EVENT_RX_FRAMING_ERROR) {
+            printf("SERIAL_EVENT_RX_FRAMING_ERROR\n");
+        }
+        if (my_serial_event & SERIAL_EVENT_RX_PARITY_ERROR) {
+            printf("SERIAL_EVENT_RX_PARITY_ERROR\n");
+        }
+        if (my_serial_event & SERIAL_EVENT_RX_OVERFLOW) {
+            printf("SERIAL_EVENT_RX_OVERFLOW\n");
+        }
+        if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
+            printf("%s\n", serial_buf_rx);
+            goto REPEAT;
+        }
     }
 }
 
@@ -284,6 +300,7 @@ void test_serial_tx_async_n_tx_attach(void)
     my_serial.attach(callback, mbed::SerialBase::TxIrq);
     
     event_callback_t event_callback(serial_async_callback);
+    int32_t sem_tokens;
     
 REPEAT:
     wait(1.0);
@@ -292,25 +309,103 @@ REPEAT:
     // Wait for UART TX FIFO empty
     wait_ms(100);
     
+    sem_tokens = 0;
     my_serial_event = 0;
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
     
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_COMPLETE);
     
-    while (! my_serial_event) {
-        wait_ms(200);
+    sem_tokens = my_serial_sem.wait(3000);
+    if (sem_tokens < 1) {
+        printf("Serial tx attach/tx async test FAILED with Semaphore.wait(): %d\n", sem_tokens);
     }
+    else {
+        if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
+            printf("Serial tx attach/tx async test PASSED\n");
+            goto REPEAT;
+        }
+        else {
+            printf("Serial tx attach/tx async test FAILED with serial event: %d\n", my_serial_event);
+        }
+    }
+}
+
+void test_serial_rtscts_master(void)
+{
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    event_callback_t event_callback(serial_async_callback);
+    int32_t sem_tokens;
     
-    if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
-        my_serial.printf("SERIAL_EVENT_TX_COMPLETE event received\n");
-        goto REPEAT;
+    
+    sem_tokens = 0;
+    my_serial_event = 0;
+    my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
+    //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
+    
+    my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
+    
+    printf("Serial RTS/CTS test (master side)...\n");
+    printf("Press any char to start...\n");
+    getchar();
+    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_COMPLETE);
+    sem_tokens = my_serial_sem.wait(osWaitForever);
+    if (sem_tokens < 1) {
+        printf("Serial RTS/CTS test FAILED with Semaphore.wait(): %d\n", sem_tokens);
+    }
+    else {
+        if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
+            printf("Serial RTS/CTS test PASSED\n");
+        }
+        else {
+            printf("Serial RTS/CTS test FAILED with serial event: %d\n", my_serial_event);
+        }
+    }
+}
+
+void test_serial_rtscts_slave(void)
+{
+    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    event_callback_t event_callback(serial_async_callback);
+    int32_t sem_tokens;
+
+    
+    my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
+    //my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
+    
+    my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
+    
+    printf("Serial RTS/CTS test (slave side)...\n");
+    printf("Press any char to start...\n");
+    getchar();
+    while (1) {
+        sem_tokens = 0;
+        my_serial_event = 0;
+        memset(serial_buf_rx, 0x00, sizeof (serial_buf_rx));
+    
+        my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_COMPLETE, SERIAL_RESERVED_CHAR_MATCH);    
+        sem_tokens = my_serial_sem.wait(osWaitForever);
+        if (sem_tokens < 1) {
+            printf("Semaphore.wait failed with Semaphore.wait(): %d\n", sem_tokens);
+            break;
+        }
+        else {
+            if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
+                printf("%s\n", serial_buf_rx);
+                continue;
+            }
+            else {
+                printf("Serial RTS/CTS test FAILED with serial event: %d\n", my_serial_event);
+                break;
+            }
+        }
     }
 }
 
 void serial_async_callback(int event)
 {
     my_serial_event = event;
+    my_serial_sem.release();
 }
 
 #if DEVICE_SPI
