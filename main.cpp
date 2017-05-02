@@ -142,8 +142,8 @@ int main()
     //test_serial_tx_async();
     //test_serial_rx_async();
     //test_serial_tx_async_n_tx_attach();
-    //test_serial_rtscts_master();
-    test_serial_rtscts_slave();
+    test_serial_rtscts_master();
+    //test_serial_rtscts_slave();
     //test_spi_master();
     //test_spi_master_async();
     //test_spi_slave();
@@ -153,7 +153,7 @@ int main()
     //test_interruptin();
 }
 
-static char serial_buf_tx[] = "123456780000000000111111111122222222223333333333444444444455555555556666666666END\n";
+static char serial_buf_tx[] = "123456780000000000111111111122222222223333333333444444444455555555556666666666q";
 //static char serial_buf_tx[23] = "12345678901234567890\n\n";
 //static char serial_buf_tx[11] = "123456789\n";
 static char serial_buf_rx[23];
@@ -377,7 +377,8 @@ void test_serial_rtscts_slave(void)
         my_serial_event = 0;
         memset(serial_buf_rx, 0x00, sizeof (serial_buf_rx));
     
-        my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);    
+        //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);
+        my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
         sem_tokens = my_serial_sem.wait(osWaitForever);
         if (sem_tokens < 1) {
             printf("Semaphore.wait failed with Semaphore.wait(): %d\n", sem_tokens);
@@ -387,6 +388,10 @@ void test_serial_rtscts_slave(void)
             if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
                 printf("%s\n", serial_buf_rx);
                 continue;
+            }
+            if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
+                printf("%s\n", serial_buf_rx);
+                break;
             }
             else {
                 printf("Serial RTS/CTS test FAILED with serial event: %d\n", my_serial_event);
