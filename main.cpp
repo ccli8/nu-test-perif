@@ -226,9 +226,7 @@ REPEAT:
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
     
-    //my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
-    
-    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_COMPLETE);
+    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     
     sem_tokens = my_serial_sem.wait(3000);
     if (sem_tokens < 1) {
@@ -258,10 +256,8 @@ REPEAT:
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
     
-    //my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
-    
-    //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_COMPLETE, SERIAL_RESERVED_CHAR_MATCH);    
-    my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_COMPLETE | SERIAL_EVENT_RX_CHARACTER_MATCH, 'q');
+    //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);    
+    my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
     
     sem_tokens = my_serial_sem.wait(osWaitForever);
     if (sem_tokens < 1) {
@@ -314,7 +310,7 @@ REPEAT:
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
     
-    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_COMPLETE);
+    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     
     sem_tokens = my_serial_sem.wait(3000);
     if (sem_tokens < 1) {
@@ -337,7 +333,6 @@ void test_serial_rtscts_master(void)
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
-    
     sem_tokens = 0;
     my_serial_event = 0;
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
@@ -348,7 +343,7 @@ void test_serial_rtscts_master(void)
     printf("Serial RTS/CTS test (master side)...\n");
     printf("Press any char to start...\n");
     getchar();
-    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_COMPLETE);
+    my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     sem_tokens = my_serial_sem.wait(osWaitForever);
     if (sem_tokens < 1) {
         printf("Serial RTS/CTS test FAILED with Semaphore.wait(): %d\n", sem_tokens);
@@ -369,7 +364,6 @@ void test_serial_rtscts_slave(void)
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
 
-    
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
     
@@ -383,7 +377,7 @@ void test_serial_rtscts_slave(void)
         my_serial_event = 0;
         memset(serial_buf_rx, 0x00, sizeof (serial_buf_rx));
     
-        my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_COMPLETE, SERIAL_RESERVED_CHAR_MATCH);    
+        my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);    
         sem_tokens = my_serial_sem.wait(osWaitForever);
         if (sem_tokens < 1) {
             printf("Semaphore.wait failed with Semaphore.wait(): %d\n", sem_tokens);
