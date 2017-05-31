@@ -1,6 +1,6 @@
 #include "mbed.h"
 
-#define MYCONF_TRAN_UNIT_T          uint32_t
+#define MYCONF_TRAN_UNIT_T          uint8_t
 #define MYCONF_BITS_TRAN_UNIT_T     (sizeof (MYCONF_TRAN_UNIT_T) * 8)
 #define MYCONF_DMA_USAGE            DMA_USAGE_NEVER
 //DMA_USAGE_NEVER,DMA_USAGE_ALWAYS
@@ -9,7 +9,6 @@
 // SPI
 #define MYCONF_SPI_AUTOSS           1
 // NOTE: CS# Deselect Time (tSHSL)
-#define MYCONF_SPI_tSHSL_US         0
 #define MYCONF_SPI_ECHO_PLUS        5
 // I2C
 #define MYCONF_I2C_ADDR             (0x90)
@@ -26,6 +25,8 @@
 #define SPI_MISO    PD_15
 #define SPI_SCLK    PD_14
 #define SPI_SSEL    PD_13
+#define MYCONF_SPI_tSHSL_US         0
+
 // I2C
 #define I2C_SDA     PD_12
 #define I2C_SCL     PD_10
@@ -44,6 +45,8 @@
 #define SPI_MISO    PD_14
 #define SPI_SCLK    PD_15
 #define SPI_SSEL    PD_12
+#define MYCONF_SPI_tSHSL_US         0
+
 // I2C
 #define I2C_SDA     PE_5
 #define I2C_SCL     PE_4
@@ -53,21 +56,29 @@
 
 #elif defined(TARGET_NUMAKER_PFM_M487)
 //Serial
-#define SERIAL_RX   PH_8
-#define SERIAL_TX   PH_9
-#define SERIAL_CTS  PB_10
-#define SERIAL_RTS  PB_9
+#define SERIAL_RX   D13
+#define SERIAL_TX   D10
+#define SERIAL_CTS  D12
+#define SERIAL_RTS  D11
 // SPI
-#define SPI_MOSI    PD_9
-#define SPI_MISO    PD_1
-#define SPI_SCLK    PD_2
-#define SPI_SSEL    PD_8
+#if 1
+#define SPI_MOSI    D11
+#define SPI_MISO    D12
+#define SPI_SCLK    D1
+#define SPI_SSEL    D0
+#else
+#define SPI_MOSI    ((PinName) NU_PINNAME_BIND(PA_0, SPI_1))    //D11
+#define SPI_MISO    ((PinName) NU_PINNAME_BIND(PA_1, SPI_1))    //D12
+#define SPI_SCLK    ((PinName) NU_PINNAME_BIND(PA_2, SPI_1))    //D13
+#define SPI_SSEL    ((PinName) NU_PINNAME_BIND(PA_3, SPI_1))    //D10 
+#endif
+#define MYCONF_SPI_tSHSL_US         10
 // I2C
-#define I2C_SDA     PA_2
-#define I2C_SCL     PA_3
+#define I2C_SDA     D9
+#define I2C_SCL     D8
 // InterruptIn
-#define BTN1        NC
-#define BTN2        NC
+#define BTN1        SW2
+#define BTN2        SW3
 
 #elif defined(TARGET_NUMAKER_PFM_NANO130)
 //Serial
@@ -112,9 +123,9 @@ static void test_interruptin(void);
 static void my_gpio_irq_rise(void);
 static void my_gpio_irq_fall(void);
 
-static DigitalOut led1(LED_RED, 1);
-static DigitalOut led2(LED_GREEN, 1);
-static DigitalOut led3(LED_BLUE, 1);
+static DigitalOut led1(LED1, 1);
+static DigitalOut led2(LED2, 1);
+static DigitalOut led3(LED3, 1);
 
 static union {
     struct {
@@ -142,9 +153,9 @@ int main()
     //test_serial_tx_async();
     //test_serial_rx_async();
     //test_serial_tx_async_n_tx_attach();
-    test_serial_rtscts_master();
+    //test_serial_rtscts_master();
     //test_serial_rtscts_slave();
-    //test_spi_master();
+    test_spi_master();
     //test_spi_master_async();
     //test_spi_slave();
     //test_i2c_master();
@@ -436,16 +447,10 @@ REPEAT:
     for (int i = 0; i < 30; i ++) {
 #if (! MYCONF_SPI_AUTOSS)
         cs = 0;
-#if MYCONF_SPI_tSHSL_US
-        wait_us(MYCONF_SPI_tSHSL_US);
-#endif
 #endif
         res = spi_master.write(data);
 #if (! MYCONF_SPI_AUTOSS)
         cs = 1;
-#if MYCONF_SPI_tSHSL_US
-        wait_us(MYCONF_SPI_tSHSL_US);
-#endif
 #endif
 
         if (i >= 2 && res != (data + MYCONF_SPI_ECHO_PLUS - 2)) {
@@ -455,6 +460,10 @@ REPEAT:
         }
         
         data ++;
+        
+#if MYCONF_SPI_tSHSL_US
+        wait_us(MYCONF_SPI_tSHSL_US);
+#endif
     }
 
     printf("%s Round %d OK\n", __func__, n_round ++);
@@ -495,9 +504,6 @@ REPEAT:
     
 #if (! MYCONF_SPI_AUTOSS)
     cs = 0;
-#if MYCONF_SPI_tSHSL_US
-    wait_us(MYCONF_SPI_tSHSL_US);
-#endif
 #endif
 
     callback_event = 0;
@@ -515,9 +521,6 @@ REPEAT:
     
 #if (! MYCONF_SPI_AUTOSS)
     cs = 1;
-#if MYCONF_SPI_tSHSL_US
-    wait_us(MYCONF_SPI_tSHSL_US);
-#endif
 #endif
 
     if (callback_event & SPI_EVENT_ERROR) {
