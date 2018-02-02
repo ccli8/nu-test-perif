@@ -98,6 +98,25 @@
 #define BTN1        NC
 #define BTN2        NC
 
+#elif defined(TARGET_NUMAKER_PFM_M2351)
+//Serial
+#define SERIAL_RX   D13
+#define SERIAL_TX   D10
+#define SERIAL_CTS  D12
+#define SERIAL_RTS  D11
+// SPI
+#define SPI_MOSI    D11
+#define SPI_MISO    D12
+#define SPI_SCLK    D13
+#define SPI_SSEL    D10 
+#define MYCONF_SPI_tSHSL_US         10
+// I2C
+#define I2C_SDA     D9
+#define I2C_SCL     D8
+// InterruptIn
+#define BTN1        SW2
+#define BTN2        SW3
+
 #endif
 
 static void test_serial_tx_attach(void);
