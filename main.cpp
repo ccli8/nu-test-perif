@@ -610,6 +610,8 @@ static void test_spi_slave(void)
 
 #endif  // #if DEVICE_SPI
 
+#if DEVICE_I2C
+
 static void test_i2c_master(void)
 {
     static I2C i2c_master(I2C_SDA, I2C_SCL);
@@ -745,6 +747,7 @@ static void test_i2c_slave(void)
     }
 }
 
+#endif  // #if DEVICE_I2C
 
 static void test_interruptin(void)
 {
