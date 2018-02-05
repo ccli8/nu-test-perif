@@ -439,6 +439,16 @@ void serial_async_callback(int event)
 
 #if DEVICE_SPI
 
+/* Trouble-shooting SPI test failure
+ *
+ * SPI test is easily to fail than other buses. If that happens, try the following fixes:
+ * 1. Lower SPI bus clock to e.g. 100 KHz
+ * 2. Better DuPont line (especially for CLK/MOSI/MISO)
+ *    (1) The shorter the better
+ *    (2) Resistor-serialized
+ * 3. More ground lines between test boards
+ */
+
 static void test_spi_master(void)
 {
 #if MYCONF_SPI_AUTOSS
@@ -452,6 +462,9 @@ static void test_spi_master(void)
     int data = 0;
     int res = 0;
     
+    // NOTE: With NUMAKER_PFM_NUC472/NUMAKER_PFM_M2351 as SPI slave, test fails with default 1 MHz SPI clock.
+    spi_master.frequency(100000);
+
     spi_master.format(MYCONF_BITS_TRAN_UNIT_T);    // n bits per SPI frame
     
     // NOTE: Run spi_master first and then run spi_slave 3 secs. This is to keep cs inactive until spi_slave is ready.
@@ -500,8 +513,8 @@ static void test_spi_master_async(void)
 
     int n_round = 0;
     
-    // With NUMAKER-PFM-NUC472 as SPI slave, test fails with default 1 MHz SPI clock.
-    spi_master.frequency(500000);
+    // NOTE: With NUMAKER_PFM_NUC472/NUMAKER_PFM_M2351 as SPI slave, test fails with default 1 MHz SPI clock.
+    spi_master.frequency(100000);
     
     spi_master.set_dma_usage(MYCONF_DMA_USAGE);
     spi_master.format(MYCONF_BITS_TRAN_UNIT_T);    // n bits per SPI frame
