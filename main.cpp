@@ -1,5 +1,9 @@
 #include "mbed.h"
 
+#include "pinmap.h"
+#include "PeripheralPins.h"
+#include "nu_modutil.h"
+
 #define MYCONF_TRAN_UNIT_T          uint8_t
 #define MYCONF_BITS_TRAN_UNIT_T     (sizeof (MYCONF_TRAN_UNIT_T) * 8)
 #define MYCONF_DMA_USAGE            DMA_USAGE_NEVER
@@ -485,7 +489,7 @@ REPEAT:
         cs = 1;
 #endif
 
-        if (i >= 2 && res != (data + MYCONF_SPI_ECHO_PLUS - 2)) {
+        if (i >= 3 && res != (data + MYCONF_SPI_ECHO_PLUS - 3)) {
             printf("i=%d, res=0x%08x, data=0x%08x\n", i, res, data);
             printf("%s Round %d FAILED\n", __func__, n_round ++);
             while (1);
@@ -515,7 +519,7 @@ static void test_spi_master_async(void)
     
     // NOTE: With NUMAKER_PFM_NUC472/NUMAKER_PFM_M2351 as SPI slave, test fails with default 1 MHz SPI clock.
     spi_master.frequency(100000);
-    
+     
     spi_master.set_dma_usage(MYCONF_DMA_USAGE);
     spi_master.format(MYCONF_BITS_TRAN_UNIT_T);    // n bits per SPI frame
     // Fill in transmit buffer
@@ -523,6 +527,25 @@ static void test_spi_master_async(void)
         spi_test_ctx.buf[i] = i;
     }
     
+    /* NOTE: When M2351 runs as SPI slave, it cannot handle transmit/receive data in time.
+     *       To fix it, SPI master is configured to enlarge suspend interval between
+     *       transmit/receive data frames. */
+    uint32_t spi_mosi = pinmap_peripheral(SPI_MOSI, PinMap_SPI_MOSI);
+    uint32_t spi_miso = pinmap_peripheral(SPI_MISO, PinMap_SPI_MISO);
+    uint32_t spi_sclk = pinmap_peripheral(SPI_SCLK, PinMap_SPI_SCLK);
+#if MYCONF_SPI_AUTOSS
+    uint32_t spi_ssel = pinmap_peripheral(SPI_SSEL, PinMap_SPI_SSEL);
+#else
+    uint32_t spi_ssel = NC;
+#endif
+    uint32_t spi_data = pinmap_merge(spi_mosi, spi_miso);
+    uint32_t spi_cntl = pinmap_merge(spi_sclk, spi_ssel);
+    uint32_t spi_perif = pinmap_merge(spi_data, spi_cntl);
+    MBED_ASSERT((int) spi_perif != NC);
+    SPI_T *spi_base = (SPI_T *) NU_MODBASE(spi_perif);
+    spi_base->CTL = (spi_base->CTL & ~SPI_CTL_SUSPITV_Msk) | SPI_CTL_SUSPITV_Msk;
+    printf("SPI_T::CTL: %08X\n", spi_base->CTL);
+
     // NOTE: Run spi_master first and then run spi_slave 3 secs. This is to keep cs inactive until spi_slave is ready.
 #if (! MYCONF_SPI_AUTOSS)
     cs = 1;
@@ -565,7 +588,7 @@ REPEAT:
     }
     if (callback_event & SPI_EVENT_COMPLETE) {
         printf("SPI_EVENT_COMPLETE\n");
-        if (memcmp(spi_test_ctx.buf + MYCONF_SPI_ECHO_PLUS, spi_test_ctx.buf2 + 2, sizeof (spi_test_ctx.buf) - sizeof (MYCONF_TRAN_UNIT_T) * MYCONF_SPI_ECHO_PLUS)) {
+        if (memcmp(spi_test_ctx.buf + MYCONF_SPI_ECHO_PLUS, spi_test_ctx.buf2 + 3, sizeof (spi_test_ctx.buf) - sizeof (MYCONF_TRAN_UNIT_T) * MYCONF_SPI_ECHO_PLUS)) {
             printf("%s Round %d FAILED\n", __func__, n_round ++);
             while (1);
         }
@@ -593,7 +616,8 @@ static void test_spi_slave(void)
     // On M453, next data in transmit buffer cannot be transmitted out until next CS select/deselect. Clear this flag doesn't recover.
     spi_slave.reply(resp);                                  // Prime SPI with first reply
     spi_slave.reply(resp);                                  // Prime SPI with first reply
-    
+    spi_slave.reply(resp);                                  // Prime SPI with first reply
+
     while(1) {
         if (spi_slave.receive()) {
             resp = spi_slave.read();                        // Read byte from master
