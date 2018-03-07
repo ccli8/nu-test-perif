@@ -11,6 +11,15 @@
         },
         "NUMAKER_PFM_M487": {
             "target.gpio-irq-debounce-enable": 1
+        },
+        "NUMAKER_PFM_M2351": {
+            "target.gpio-irq-debounce-enable": 1
+        },
+        "NUMAKER_PFM_M2351_S": {
+            "target.gpio-irq-debounce-enable": 1
+        },
+        "NUMAKER_PFM_M2351_NS": {
+            "target.gpio-irq-debounce-enable": 1
         }
     }
 }
