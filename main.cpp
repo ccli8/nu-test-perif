@@ -177,8 +177,8 @@ int main()
     //test_serial_rx_async();
     //test_serial_tx_async_n_tx_attach();
     //test_serial_rtscts_master();
-    //test_serial_rtscts_slave();
-    test_spi_master();
+    test_serial_rtscts_slave();
+    //test_spi_master();
     //test_spi_master_async();
     //test_spi_slave();
     //test_i2c_master();
@@ -187,9 +187,13 @@ int main()
     //test_interruptin();
 }
 
+#if 1
 static char serial_buf_tx[] = "123456780000000000111111111122222222223333333333444444444455555555556666666666q";
-//static char serial_buf_tx[23] = "12345678901234567890\n\n";
-//static char serial_buf_tx[11] = "123456789\n";
+#elif 0
+static char serial_buf_tx[23] = "12345678901234567890\n\n";
+#else
+static char serial_buf_tx[11] = "123456789\n";
+#endif
 static char serial_buf_rx[23];
 Semaphore my_serial_sem(0);
 static volatile int my_serial_event = 0;
@@ -361,22 +365,40 @@ REPEAT:
     }
 }
 
+/* For serial RTS/CTS test, we must follow the steps in order:
+ *
+ * 1. On host, prepare two consoles and connect them to serial master/slave respectively.  
+ * 2. On devices, run serial master/slave respectively.
+ *    They both would pause at getchar. The order of which to run first is not significant here.
+ *    At this time, both serial master/slave's serial are not initialized yet. This is to avoid
+ *    interference with each other's current serial by previous serial.
+ * 3. Press any key on the console connecting to serial slave to let it continue. This has the following
+ *    purposes:
+ *    (1) Avoid premature data transfer from serial master
+ *    (2) Enable serial slave's RTS/CTS flow control first.
+ * 4. Press any key on the console connecting to serial master to let it continue.
+ */
+
 void test_serial_rtscts_master(void)
 {
+    printf("Serial RTS/CTS test (master side)...\n");
+    printf("Press any char to start...\n");
+    getchar();
+
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
     sem_tokens = 0;
     my_serial_event = 0;
+#if 1
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
-    //my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
+#else
+    my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
+#endif
     
     my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
-    
-    printf("Serial RTS/CTS test (master side)...\n");
-    printf("Press any char to start...\n");
-    getchar();
+
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     sem_tokens = my_serial_sem.wait(osWaitForever);
     if (sem_tokens < 1) {
@@ -394,44 +416,58 @@ void test_serial_rtscts_master(void)
 
 void test_serial_rtscts_slave(void)
 {
+    printf("Serial RTS/CTS test (slave side)...\n");
+    printf("Press any char to start...\n");
+    getchar();
+
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
 
+#if 1
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
-    //my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
-    
+#else
+    my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
+#endif
+
     my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
-    
-    printf("Serial RTS/CTS test (slave side)...\n");
-    printf("Press any char to start...\n");
-    getchar();
+
     while (1) {
         sem_tokens = 0;
         my_serial_event = 0;
         memset(serial_buf_rx, 0x00, sizeof (serial_buf_rx));
-    
-        //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);
+
+        /* Assume serial_buf_tx ends with 'q'
+         * 
+         * Without char_match, we could have the last my_serial.read unfinished because it doesn't
+         * receive enough characters from serial_buf_tx.
+         * 
+         * With char_match set to 'q', we could get full serial_buf_tx before 'q'.
+         */
+#if 0
+        my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);
+#else
         my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
+#endif
+
         sem_tokens = my_serial_sem.wait(osWaitForever);
         if (sem_tokens < 1) {
             printf("Semaphore.wait failed with Semaphore.wait(): %d\n", sem_tokens);
-            break;
         }
         else {
             if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
                 printf("%s\n", serial_buf_rx);
-                continue;
             }
-            if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
+            else if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
                 printf("%s\n", serial_buf_rx);
-                break;
             }
             else {
                 printf("Serial RTS/CTS test FAILED with serial event: %d\n", my_serial_event);
-                break;
             }
         }
+        
+        /* With RTS/CTS flow control enabled, we shouldn't get serial rx FIFO overflow due to the wait. */
+        wait_ms(1000);
     }
 }
 
