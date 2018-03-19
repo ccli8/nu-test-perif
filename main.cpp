@@ -86,21 +86,21 @@
 
 #elif defined(TARGET_NUMAKER_PFM_NANO130)
 //Serial
-#define SERIAL_RX   PB_0
-#define SERIAL_TX   PB_1
+#define SERIAL_RX   D0
+#define SERIAL_TX   D1
 #define SERIAL_CTS  NC
 #define SERIAL_RTS  NC
 // SPI
-#define SPI_MOSI    PE_4
-#define SPI_MISO    PE_3
-#define SPI_SCLK    PE_2
-#define SPI_SSEL    PE_1
+#define SPI_MOSI    D11
+#define SPI_MISO    D12
+#define SPI_SCLK    D13
+#define SPI_SSEL    D10
 // I2C
-#define I2C_SDA     PA_8
-#define I2C_SCL     PA_9
+#define I2C_SDA     D14
+#define I2C_SCL     D15
 // InterruptIn
-#define BTN1        NC
-#define BTN2        NC
+#define BTN1        SW1
+#define BTN2        SW2
 
 #elif defined(TARGET_NUMAKER_PFM_M2351)
 //Serial
@@ -170,14 +170,14 @@ int MY_BUF_POS = 0;
 
 int main()
 {
-    //test_serial_tx_attach();
+    test_serial_tx_attach();
     //test_serial_rx_attach();
     //test_serial_txrx_attach();
     //test_serial_tx_async();
     //test_serial_rx_async();
     //test_serial_tx_async_n_tx_attach();
     //test_serial_rtscts_master();
-    test_serial_rtscts_slave();
+    //test_serial_rtscts_slave();
     //test_spi_master();
     //test_spi_master_async();
     //test_spi_slave();
@@ -294,8 +294,8 @@ REPEAT:
     my_serial.set_dma_usage_tx(DMA_USAGE_NEVER);
     //my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
     
-    //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);    
-    my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
+    my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);    
+    //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
     
     sem_tokens = my_serial_sem.wait(osWaitForever);
     if (sem_tokens < 1) {
@@ -563,7 +563,7 @@ static void test_spi_master_async(void)
         spi_test_ctx.buf[i] = i;
     }
     
-    /* NOTE: When M2351 runs as SPI slave, it cannot handle transmit/receive data in time.
+    /* NOTE: When NUC472/M2351 runs as SPI slave, it cannot handle transmit/receive data in time.
      *       To fix it, SPI master is configured to enlarge suspend interval between
      *       transmit/receive data frames. */
     uint32_t spi_mosi = pinmap_peripheral(SPI_MOSI, PinMap_SPI_MOSI);
@@ -579,7 +579,11 @@ static void test_spi_master_async(void)
     uint32_t spi_perif = pinmap_merge(spi_data, spi_cntl);
     MBED_ASSERT((int) spi_perif != NC);
     SPI_T *spi_base = (SPI_T *) NU_MODBASE(spi_perif);
+#if defined(TARGET_NUMAKER_PFM_NANO130)
+    spi_base->CTL = (spi_base->CTL & ~SPI_CTL_SP_CYCLE_Msk) | SPI_CTL_SP_CYCLE_Msk;
+#else
     spi_base->CTL = (spi_base->CTL & ~SPI_CTL_SUSPITV_Msk) | SPI_CTL_SUSPITV_Msk;
+#endif
     printf("SPI_T::CTL: %08X\n", spi_base->CTL);
 
     // NOTE: Run spi_master first and then run spi_slave 3 secs. This is to keep cs inactive until spi_slave is ready.
