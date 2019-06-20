@@ -40,10 +40,10 @@
 
 #elif defined(TARGET_NUMAKER_PFM_M453)
 //Serial
-#define SERIAL_RX   D0
-#define SERIAL_TX   D1
-#define SERIAL_CTS  NC
-#define SERIAL_RTS  NC
+#define SERIAL_RX   A2
+#define SERIAL_TX   A3
+#define SERIAL_CTS  A4
+#define SERIAL_RTS  A5
 // SPI
 #define SPI_MOSI    PD_13
 #define SPI_MISO    PD_14
@@ -88,8 +88,8 @@
 //Serial
 #define SERIAL_RX   D0
 #define SERIAL_TX   D1
-#define SERIAL_CTS  NC
-#define SERIAL_RTS  NC
+#define SERIAL_CTS  PB_7
+#define SERIAL_RTS  PB_6
 // SPI
 #define SPI_MOSI    D11
 #define SPI_MISO    D12
