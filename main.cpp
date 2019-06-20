@@ -147,8 +147,6 @@ static void my_gpio_irq_rise(void);
 static void my_gpio_irq_fall(void);
 
 static DigitalOut led1(LED1, 1);
-static DigitalOut led2(LED2, 1);
-static DigitalOut led3(LED3, 1);
 
 static union {
     struct {
@@ -241,13 +239,12 @@ static void test_serial_txrx_attach(void)
 
 static void serial_tx_callback(RawSerial *serial)
 {
-    led2 = ! led2;
+    led1 = ! led1;
 }
 
 static void serial_rx_callback(RawSerial *serial)
 {
     // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
-    led3 = ! led3;
     // NOTE: On Nuvoton targets, no H/W IRQ to match RxIrq. Simulation of RxIrq requires the call to Serial::getc().
     serial->putc(serial->getc());
 }
@@ -833,11 +830,11 @@ static void test_interruptin(void)
 
 static void my_gpio_irq_rise(void)
 {
-    led2 = ! led2;
+    led1 = ! led1;
     //printf("Detected GPIO IRQ Rise\n");
 }
 static void my_gpio_irq_fall(void)
 {
-    led2 = ! led2;
+    led1 = ! led1;
     //printf("Detected GPIO IRQ Fall\n");
 }
