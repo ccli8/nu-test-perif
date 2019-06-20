@@ -813,6 +813,7 @@ static void test_i2c_slave(void)
 
 #endif  // #if DEVICE_I2C
 
+#if defined(BTN1) && defined(BTN2)
 static void test_interruptin(void)
 {
     static InterruptIn int_in1(BTN1);
@@ -828,6 +829,7 @@ static void test_interruptin(void)
     int_in2.rise(my_gpio_irq_rise);
     int_in2.fall(my_gpio_irq_fall);
 }
+#endif
 
 static void my_gpio_irq_rise(void)
 {
