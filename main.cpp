@@ -32,8 +32,8 @@
 #define MYCONF_SPI_tSHSL_US         0
 
 // I2C
-#define I2C_SDA     PD_12
-#define I2C_SCL     PD_10
+#define I2C_SDA     D14
+#define I2C_SCL     D15
 // InterruptIn
 #define BTN1        SW1
 #define BTN2        SW2
@@ -52,8 +52,8 @@
 #define MYCONF_SPI_tSHSL_US         0
 
 // I2C
-#define I2C_SDA     PE_5
-#define I2C_SCL     PE_4
+#define I2C_SDA     D14
+#define I2C_SCL     D15
 // InterruptIn
 #define BTN1        SW2
 #define BTN2        SW3
