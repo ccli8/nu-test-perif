@@ -206,11 +206,11 @@ int main()
 #if 1
 static char serial_buf_tx[] = "123456780000000000111111111122222222223333333333444444444455555555556666666666q";
 #elif 0
-static char serial_buf_tx[23] = "12345678901234567890\n\n";
+static char serial_buf_tx[25] = "12345678901234567890\r\n\r\n";
 #else
-static char serial_buf_tx[11] = "123456789\n";
+static char serial_buf_tx[13] = "1234567890\r\n";
 #endif
-static char serial_buf_rx[23];
+static char serial_buf_rx[25];
 Semaphore my_serial_sem(0);
 static volatile int my_serial_event = 0;
 
@@ -283,15 +283,15 @@ REPEAT:
     
     sem_tokens = my_serial_sem.wait(3000);
     if (sem_tokens < 1) {
-        printf("Serial Tx async test FAILED with Semaphore.wait(): %d\n", sem_tokens);
+        printf("Serial Tx async test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
-            printf("Serial Tx async test PASSED\n");
+            printf("Serial Tx async test PASSED\r\n");
             goto REPEAT;
         }
         else {
-            printf("Serial Tx async test FAILED with serial event: %d\n", my_serial_event);
+            printf("Serial Tx async test FAILED with serial event: %d\r\n", my_serial_event);
         }
     }
 }
@@ -314,28 +314,28 @@ REPEAT:
     
     sem_tokens = my_serial_sem.wait(osWaitForever);
     if (sem_tokens < 1) {
-        printf("Serial Rx async test FAILED with Semaphore.wait(): %d\n", sem_tokens);
+        printf("Serial Rx async test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
             serial_buf_rx[sizeof (serial_buf_rx) - 1] = 0;
-            printf("%s\n", serial_buf_rx);
+            printf("%s\r\n", serial_buf_rx);
             goto REPEAT;
         }
         if (my_serial_event & SERIAL_EVENT_RX_OVERRUN_ERROR) {
-            printf("SERIAL_EVENT_RX_OVERRUN_ERROR\n");
+            printf("SERIAL_EVENT_RX_OVERRUN_ERROR\r\n");
         }
         if (my_serial_event & SERIAL_EVENT_RX_FRAMING_ERROR) {
-            printf("SERIAL_EVENT_RX_FRAMING_ERROR\n");
+            printf("SERIAL_EVENT_RX_FRAMING_ERROR\r\n");
         }
         if (my_serial_event & SERIAL_EVENT_RX_PARITY_ERROR) {
-            printf("SERIAL_EVENT_RX_PARITY_ERROR\n");
+            printf("SERIAL_EVENT_RX_PARITY_ERROR\r\n");
         }
         if (my_serial_event & SERIAL_EVENT_RX_OVERFLOW) {
-            printf("SERIAL_EVENT_RX_OVERFLOW\n");
+            printf("SERIAL_EVENT_RX_OVERFLOW\r\n");
         }
         if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
-            printf("%s\n", serial_buf_rx);
+            printf("%s\r\n", serial_buf_rx);
             goto REPEAT;
         }
     }
@@ -367,15 +367,15 @@ REPEAT:
     
     sem_tokens = my_serial_sem.wait(3000);
     if (sem_tokens < 1) {
-        printf("Serial tx attach/tx async test FAILED with Semaphore.wait(): %d\n", sem_tokens);
+        printf("Serial tx attach/tx async test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
-            printf("Serial tx attach/tx async test PASSED\n");
+            printf("Serial tx attach/tx async test PASSED\r\n");
             goto REPEAT;
         }
         else {
-            printf("Serial tx attach/tx async test FAILED with serial event: %d\n", my_serial_event);
+            printf("Serial tx attach/tx async test FAILED with serial event: %d\r\n", my_serial_event);
         }
     }
 }
@@ -396,8 +396,8 @@ REPEAT:
 
 void test_serial_rtscts_master(void)
 {
-    printf("Serial RTS/CTS test (master side)...\n");
-    printf("Press any char to start...\n");
+    printf("Serial RTS/CTS test (master side)...\r\n");
+    printf("Press any char to start...\r\n");
     getchar();
 
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
@@ -417,22 +417,22 @@ void test_serial_rtscts_master(void)
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     sem_tokens = my_serial_sem.wait(osWaitForever);
     if (sem_tokens < 1) {
-        printf("Serial RTS/CTS test FAILED with Semaphore.wait(): %d\n", sem_tokens);
+        printf("Serial RTS/CTS test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
-            printf("Serial RTS/CTS test PASSED\n");
+            printf("Serial RTS/CTS test PASSED\r\n");
         }
         else {
-            printf("Serial RTS/CTS test FAILED with serial event: %d\n", my_serial_event);
+            printf("Serial RTS/CTS test FAILED with serial event: %d\r\n", my_serial_event);
         }
     }
 }
 
 void test_serial_rtscts_slave(void)
 {
-    printf("Serial RTS/CTS test (slave side)...\n");
-    printf("Press any char to start...\n");
+    printf("Serial RTS/CTS test (slave side)...\r\n");
+    printf("Press any char to start...\r\n");
     getchar();
 
     static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
@@ -467,17 +467,17 @@ void test_serial_rtscts_slave(void)
 
         sem_tokens = my_serial_sem.wait(osWaitForever);
         if (sem_tokens < 1) {
-            printf("Semaphore.wait failed with Semaphore.wait(): %d\n", sem_tokens);
+            printf("Semaphore.wait failed with Semaphore.wait(): %d\r\n", sem_tokens);
         }
         else {
             if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
-                printf("%s\n", serial_buf_rx);
+                printf("%s\r\n", serial_buf_rx);
             }
             else if (my_serial_event & SERIAL_EVENT_RX_CHARACTER_MATCH) {
-                printf("%s\n", serial_buf_rx);
+                printf("%s\r\n", serial_buf_rx);
             }
             else {
-                printf("Serial RTS/CTS test FAILED with serial event: %d\n", my_serial_event);
+                printf("Serial RTS/CTS test FAILED with serial event: %d\r\n", my_serial_event);
             }
         }
         
@@ -541,8 +541,8 @@ REPEAT:
 #endif
 
         if (i >= 3 && res != (data + MYCONF_SPI_ECHO_PLUS - 3)) {
-            printf("i=%d, res=0x%08x, data=0x%08x\n", i, res, data);
-            printf("%s Round %d FAILED\n", __func__, n_round ++);
+            printf("i=%d, res=0x%08x, data=0x%08x\r\n", i, res, data);
+            printf("%s Round %d FAILED\r\n", __func__, n_round ++);
             while (1);
         }
         
@@ -553,7 +553,7 @@ REPEAT:
 #endif
     }
 
-    printf("%s Round %d OK\n", __func__, n_round ++);
+    printf("%s Round %d OK\r\n", __func__, n_round ++);
     goto REPEAT;
 }
 
@@ -599,7 +599,7 @@ static void test_spi_master_async(void)
 #else
     spi_base->CTL = (spi_base->CTL & ~SPI_CTL_SUSPITV_Msk) | SPI_CTL_SUSPITV_Msk;
 #endif
-    printf("SPI_T::CTL: %08X\n", spi_base->CTL);
+    printf("SPI_T::CTL: %08X\r\n", spi_base->CTL);
 
     // NOTE: Run spi_master first and then run spi_slave 3 secs. This is to keep cs inactive until spi_slave is ready.
 #if (! MYCONF_SPI_AUTOSS)
@@ -619,7 +619,7 @@ REPEAT:
     callback_event = 0;
     event_callback_t callback(spi_master_async_callback);
     if (spi_master.transfer(spi_test_ctx.buf, sizeof (spi_test_ctx.buf) / sizeof (spi_test_ctx.buf[0]), spi_test_ctx.buf2, sizeof (spi_test_ctx.buf2) / sizeof (spi_test_ctx.buf2[0]), callback, SPI_EVENT_ALL)) {
-        printf("%s FAILED\n", __func__);
+        printf("%s FAILED\r\n", __func__);
 #if (! MYCONF_SPI_AUTOSS)
         cs = 1;
 #endif
@@ -634,21 +634,21 @@ REPEAT:
 #endif
 
     if (callback_event & SPI_EVENT_ERROR) {
-        printf("SPI_EVENT_ERROR\n");
+        printf("SPI_EVENT_ERROR\r\n");
         while (1);
     }
     if (callback_event & SPI_EVENT_RX_OVERFLOW) {
-        printf("SPI_EVENT_RX_OVERFLOW\n");
+        printf("SPI_EVENT_RX_OVERFLOW\r\n");
         while (1);
     }
     if (callback_event & SPI_EVENT_COMPLETE) {
-        printf("SPI_EVENT_COMPLETE\n");
+        printf("SPI_EVENT_COMPLETE\r\n");
         if (memcmp(spi_test_ctx.buf + MYCONF_SPI_ECHO_PLUS, spi_test_ctx.buf2 + 3, sizeof (spi_test_ctx.buf) - sizeof (MYCONF_TRAN_UNIT_T) * MYCONF_SPI_ECHO_PLUS)) {
-            printf("%s Round %d FAILED\n", __func__, n_round ++);
+            printf("%s Round %d FAILED\r\n", __func__, n_round ++);
             while (1);
         }
         else {
-            printf("%s Round %d OK\n", __func__, n_round ++);
+            printf("%s Round %d OK\r\n", __func__, n_round ++);
             goto REPEAT;
         }
     }
@@ -740,12 +740,12 @@ REPEAT:
         data = *buf_pos ++;
         data2 = *buf2_pos ++;
         if (data2 != (data + 5)) {
-            printf("%s Round %d FAILED\n", __func__, n_round ++);
+            printf("%s Round %d FAILED\r\n", __func__, n_round ++);
             while (1);
         }
     }
 
-    printf("%s Round %d OK\n", __func__, n_round ++);
+    printf("%s Round %d OK\r\n", __func__, n_round ++);
     goto REPEAT;
 }
 
@@ -767,7 +767,7 @@ REPEAT:
     callback_event = 0;
     event_callback_t callback(i2c_master_async_callback);
     if (i2c_master.transfer(MYCONF_I2C_ADDR, i2c_test_ctx.buf, sizeof (i2c_test_ctx.buf) / sizeof (i2c_test_ctx.buf[0]), i2c_test_ctx.buf2, sizeof (i2c_test_ctx.buf2) / sizeof (i2c_test_ctx.buf2[0]), callback, I2C_EVENT_ALL, 0)) {
-        printf("%s FAILED\n", __func__);
+        printf("%s FAILED\r\n", __func__);
         while (1);
     }
     
@@ -775,25 +775,25 @@ REPEAT:
     while (callback_event == 0);
 
     if (callback_event & I2C_EVENT_ERROR) {
-        printf("I2C_EVENT_ERROR\n");
+        printf("I2C_EVENT_ERROR\r\n");
         while (1);
     }
     if (callback_event & I2C_EVENT_ERROR_NO_SLAVE) {
-        printf("I2C_EVENT_ERROR_NO_SLAVE\n");
+        printf("I2C_EVENT_ERROR_NO_SLAVE\r\n");
         while (1);
     }
     if (callback_event & I2C_EVENT_TRANSFER_EARLY_NACK) {
-        printf("I2C_EVENT_TRANSFER_EARLY_NACK\n");
+        printf("I2C_EVENT_TRANSFER_EARLY_NACK\r\n");
         while (1);
     }
     if (callback_event & I2C_EVENT_TRANSFER_COMPLETE) {
-        printf("I2C_EVENT_TRANSFER_COMPLETE\n");
+        printf("I2C_EVENT_TRANSFER_COMPLETE\r\n");
         if (memcmp(i2c_test_ctx.buf + 1, i2c_test_ctx.buf2, sizeof (i2c_test_ctx.buf) - sizeof (char) * 1)) {
-            printf("%s Round %d FAILED\n", __func__, n_round ++);
+            printf("%s Round %d FAILED\r\n", __func__, n_round ++);
             while (1);
         }
         else {
-            printf("%s Round %d OK\n", __func__, n_round ++);
+            printf("%s Round %d OK\r\n", __func__, n_round ++);
             goto REPEAT;
         }
     }
@@ -849,10 +849,10 @@ static void test_interruptin(void)
 static void my_gpio_irq_rise(void)
 {
     led1 = ! led1;
-    //printf("Detected GPIO IRQ Rise\n");
+    //printf("Detected GPIO IRQ Rise\r\n");
 }
 static void my_gpio_irq_fall(void)
 {
     led1 = ! led1;
-    //printf("Detected GPIO IRQ Fall\n");
+    //printf("Detected GPIO IRQ Fall\r\n");
 }
