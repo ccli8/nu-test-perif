@@ -141,11 +141,33 @@
 
 #endif
 
+class MyRawSerial: public SerialBase
+{
+public:
+    MyRawSerial(
+        PinName tx,
+        PinName rx,
+        int baud = MBED_CONF_PLATFORM_DEFAULT_SERIAL_BAUD_RATE
+    ): SerialBase(tx, rx, baud)
+    {
+    }
+
+    int getc()
+    {
+        return _base_getc();
+    }
+
+    int putc(int c)
+    {
+        return _base_putc(c);
+    }
+};
+    
 static void test_serial_tx_attach(void);
 static void test_serial_rx_attach(void);
 static void test_serial_txrx_attach(void);
-static void serial_tx_callback(RawSerial *serial);
-static void serial_rx_callback(RawSerial *serial);
+static void serial_tx_callback(MyRawSerial *serial);
+static void serial_rx_callback(MyRawSerial *serial);
 static void test_serial_tx_async(void);
 static void test_serial_rx_async(void);
 static void test_serial_tx_async_n_tx_attach(void);
@@ -216,34 +238,34 @@ static volatile int my_serial_event = 0;
 
 static void test_serial_tx_attach(void)
 {
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_tx_callback, &my_serial);
     my_serial.attach(callback, mbed::SerialBase::TxIrq);
     
     while (1) {
         my_serial.putc('.');
-        wait(1.0);
+        ThisThread::sleep_for(1000ms);
     }
 }
 
 static void test_serial_rx_attach(void)
 {
-    // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    // NOTE: Use MyRawSerial instead of Serial to be able to call putc/getc in interrupt context.
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_rx_callback, &my_serial);
     my_serial.attach(callback, mbed::SerialBase::RxIrq);
     
     while (1) {
-        wait(1.0);
+        ThisThread::sleep_for(1000ms);
     }
 }
 
 static void test_serial_txrx_attach(void)
 {
-    // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    // NOTE: Use MyRawSerial instead of Serial to be able to call putc/getc in interrupt context.
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> tx_callback(&serial_tx_callback, &my_serial);
     Callback<void()> rx_callback(&serial_rx_callback, &my_serial);  
@@ -251,25 +273,25 @@ static void test_serial_txrx_attach(void)
     my_serial.attach(rx_callback, mbed::SerialBase::RxIrq);
     
     while (1) {
-        wait(1.0);
+        ThisThread::sleep_for(1000ms);
     }
 }
 
-static void serial_tx_callback(RawSerial *serial)
+static void serial_tx_callback(MyRawSerial *serial)
 {
     led1 = ! led1;
 }
 
-static void serial_rx_callback(RawSerial *serial)
+static void serial_rx_callback(MyRawSerial *serial)
 {
-    // NOTE: Use RawSerial instead of Serial to be able to call putc/getc in interrupt context.
+    // NOTE: Use MyRawSerial instead of Serial to be able to call putc/getc in interrupt context.
     // NOTE: On Nuvoton targets, no H/W IRQ to match RxIrq. Simulation of RxIrq requires the call to Serial::getc().
     serial->putc(serial->getc());
 }
 
 static void test_serial_tx_async(void)
 {   
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
@@ -281,9 +303,9 @@ REPEAT:
     
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     
-    sem_tokens = my_serial_sem.wait(3000);
+    sem_tokens = my_serial_sem.try_acquire_for(3000ms);
     if (sem_tokens < 1) {
-        printf("Serial Tx async test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
+        printf("Serial Tx async test FAILED with Semaphore.try_acquire_for(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
@@ -298,7 +320,7 @@ REPEAT:
 
 static void test_serial_rx_async(void)
 {   
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
@@ -312,9 +334,9 @@ REPEAT:
     my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, SERIAL_RESERVED_CHAR_MATCH);    
     //my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
     
-    sem_tokens = my_serial_sem.wait(osWaitForever);
+    sem_tokens = my_serial_sem.try_acquire_for(10s);
     if (sem_tokens < 1) {
-        printf("Serial Rx async test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
+        printf("Serial Rx async test FAILED with Semaphore.try_acquire_for(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
@@ -343,7 +365,7 @@ REPEAT:
 
 void test_serial_tx_async_n_tx_attach(void)
 {
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     
     Callback<void()> callback(&serial_tx_callback, &my_serial);
     my_serial.attach(callback, mbed::SerialBase::TxIrq);
@@ -352,11 +374,11 @@ void test_serial_tx_async_n_tx_attach(void)
     int32_t sem_tokens;
     
 REPEAT:
-    wait(1.0);
+    ThisThread::sleep_for(1000ms);
     
     my_serial.putc('.');
     // Wait for UART TX FIFO empty
-    wait_ms(100);
+    ThisThread::sleep_for(100ms);
     
     sem_tokens = 0;
     my_serial_event = 0;
@@ -365,9 +387,9 @@ REPEAT:
     
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     
-    sem_tokens = my_serial_sem.wait(3000);
+    sem_tokens = my_serial_sem.try_acquire_for(3000ms);
     if (sem_tokens < 1) {
-        printf("Serial tx attach/tx async test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
+        printf("Serial tx attach/tx async test FAILED with Semaphore.try_acquire_for(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
@@ -400,7 +422,7 @@ void test_serial_rtscts_master(void)
     printf("Press any char to start...\r\n");
     getchar();
 
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
@@ -412,12 +434,12 @@ void test_serial_rtscts_master(void)
     my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
 #endif
     
-    my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
+    my_serial.set_flow_control(MyRawSerial::RTSCTS, SERIAL_RTS, SERIAL_CTS);
 
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
-    sem_tokens = my_serial_sem.wait(osWaitForever);
+    sem_tokens = my_serial_sem.try_acquire_for(10s);
     if (sem_tokens < 1) {
-        printf("Serial RTS/CTS test FAILED with Semaphore.wait(): %d\r\n", sem_tokens);
+        printf("Serial RTS/CTS test FAILED with Semaphore.try_acquire_for(): %d\r\n", sem_tokens);
     }
     else {
         if (my_serial_event & SERIAL_EVENT_TX_COMPLETE) {
@@ -435,7 +457,7 @@ void test_serial_rtscts_slave(void)
     printf("Press any char to start...\r\n");
     getchar();
 
-    static RawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
 
@@ -445,7 +467,7 @@ void test_serial_rtscts_slave(void)
     my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
 #endif
 
-    my_serial.set_flow_control(SerialBase::RTSCTS, SERIAL_RTS, SERIAL_CTS);
+    my_serial.set_flow_control(MyRawSerial::RTSCTS, SERIAL_RTS, SERIAL_CTS);
 
     while (1) {
         sem_tokens = 0;
@@ -465,9 +487,9 @@ void test_serial_rtscts_slave(void)
         my_serial.read((uint8_t *) serial_buf_rx, sizeof (serial_buf_rx) - 1, event_callback, SERIAL_EVENT_RX_ALL, 'q');
 #endif
 
-        sem_tokens = my_serial_sem.wait(osWaitForever);
+        sem_tokens = my_serial_sem.try_acquire_for(10s);
         if (sem_tokens < 1) {
-            printf("Semaphore.wait failed with Semaphore.wait(): %d\r\n", sem_tokens);
+            printf("Semaphore.try_acquire_for failed with Semaphore.try_acquire_for(): %d\r\n", sem_tokens);
         }
         else {
             if (my_serial_event & SERIAL_EVENT_RX_COMPLETE) {
@@ -482,7 +504,7 @@ void test_serial_rtscts_slave(void)
         }
         
         /* With RTS/CTS flow control enabled, we shouldn't get serial rx FIFO overflow due to the wait. */
-        wait_ms(1000);
+        ThisThread::sleep_for(1000ms);
     }
 }
 
@@ -526,7 +548,7 @@ static void test_spi_master(void)
 #if (! MYCONF_SPI_AUTOSS)
     cs = 1;
 #endif
-    wait(3);
+    ThisThread::sleep_for(3000ms);
 	
 REPEAT:
 
@@ -605,7 +627,7 @@ static void test_spi_master_async(void)
 #if (! MYCONF_SPI_AUTOSS)
     cs = 1;
 #endif
-    wait(3);
+    ThisThread::sleep_for(3000ms);
 
 REPEAT:
 
