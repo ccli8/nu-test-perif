@@ -20,122 +20,122 @@
 
 #if defined(TARGET_NUMAKER_PFM_NUC472)
 //Serial
-#define SERIAL_RX   PF_0
-#define SERIAL_TX   PD_15
-#define SERIAL_CTS  PD_13
-#define SERIAL_RTS  PD_14
+#define MYSERIAL_INST1_RX   PF_0
+#define MYSERIAL_INST1_TX   PD_15
+#define MYSERIAL_INST1_CTS  PD_13
+#define MYSERIAL_INST1_RTS  PD_14
 // SPI
-#define SPI_MOSI    PF_0
-#define SPI_MISO    PD_15
-#define SPI_SCLK    PD_14
-#define SPI_SSEL    PD_13
-#define MYCONF_SPI_tSHSL_US         0
+#define MYSPI_INST1_MOSI    PF_0
+#define MYSPI_INST1_MISO    PD_15
+#define MYSPI_INST1_SCLK    PD_14
+#define MYSPI_INST1_SSEL    PD_13
+#define MYCONF_SPI_tSHSL_US 0
 
 // I2C
-#define I2C_SDA     D14
-#define I2C_SCL     D15
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
 // InterruptIn
-#define BTN1        SW1
-#define BTN2        SW2
+#define MYBTN_INST1         SW1
+#define MYBTN_INST2         SW2
 
 #elif defined(TARGET_NUMAKER_PFM_M453)
 //Serial
-#define SERIAL_RX   A2
-#define SERIAL_TX   A3
-#define SERIAL_CTS  A4
-#define SERIAL_RTS  A5
+#define MYSERIAL_INST1_RX   A2
+#define MYSERIAL_INST1_TX   A3
+#define MYSERIAL_INST1_CTS  A4
+#define MYSERIAL_INST1_RTS  A5
 // SPI
-#define SPI_MOSI    PD_13
-#define SPI_MISO    PD_14
-#define SPI_SCLK    PD_15
-#define SPI_SSEL    PD_12
-#define MYCONF_SPI_tSHSL_US         0
+#define MYSPI_INST1_MOSI    PD_13
+#define MYSPI_INST1_MISO    PD_14
+#define MYSPI_INST1_SCLK    PD_15
+#define MYSPI_INST1_SSEL    PD_12
+#define MYCONF_SPI_tSHSL_US 0
 
 // I2C
-#define I2C_SDA     D14
-#define I2C_SCL     D15
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
 // InterruptIn
-#define BTN1        SW2
-#define BTN2        SW3
+#define MYBTN_INST1         SW2
+#define MYBTN_INST2         SW3
 
 #elif defined(TARGET_NUMAKER_PFM_M487)
 //Serial
-#define SERIAL_RX   D13
-#define SERIAL_TX   D10
-#define SERIAL_CTS  D12
-#define SERIAL_RTS  D11
+#define MYSERIAL_INST1_RX   D13
+#define MYSERIAL_INST1_TX   D10
+#define MYSERIAL_INST1_CTS  D12
+#define MYSERIAL_INST1_RTS  D11
 // SPI
 #if 1
-#define SPI_MOSI    D11
-#define SPI_MISO    D12
-#define SPI_SCLK    D1
-#define SPI_SSEL    D0
+#define MYSPI_INST1_MOSI    D11
+#define MYSPI_INST1_MISO    D12
+#define MYSPI_INST1_SCLK    D1
+#define MYSPI_INST1_SSEL    D0
 #else
-#define SPI_MOSI    ((PinName) NU_PINNAME_BIND(PA_0, SPI_1))    //D11
-#define SPI_MISO    ((PinName) NU_PINNAME_BIND(PA_1, SPI_1))    //D12
-#define SPI_SCLK    ((PinName) NU_PINNAME_BIND(PA_2, SPI_1))    //D13
-#define SPI_SSEL    ((PinName) NU_PINNAME_BIND(PA_3, SPI_1))    //D10 
+#define MYSPI_INST1_MOSI    ((PinName) NU_PINNAME_BIND(PA_0, SPI_1))    //D11
+#define MYSPI_INST1_MISO    ((PinName) NU_PINNAME_BIND(PA_1, SPI_1))    //D12
+#define MYSPI_INST1_SCLK    ((PinName) NU_PINNAME_BIND(PA_2, SPI_1))    //D13
+#define MYSPI_INST1_SSEL    ((PinName) NU_PINNAME_BIND(PA_3, SPI_1))    //D10 
 #endif
-#define MYCONF_SPI_tSHSL_US         10
+#define MYCONF_SPI_tSHSL_US 10
 // I2C
-#define I2C_SDA     D9
-#define I2C_SCL     D8
+#define MYI2C_INST1_SDA     D9
+#define MYI2C_INST1_SCL     D8
 // InterruptIn
-#define BTN1        SW2
-#define BTN2        SW3
+#define MYBTN_INST1         SW2
+#define MYBTN_INST2         SW3
 
 #elif defined(TARGET_NUMAKER_PFM_NANO130)
 //Serial
-#define SERIAL_RX   D0
-#define SERIAL_TX   D1
-#define SERIAL_CTS  PB_7
-#define SERIAL_RTS  PB_6
+#define MYSERIAL_INST1_RX   D0
+#define MYSERIAL_INST1_TX   D1
+#define MYSERIAL_INST1_CTS  PB_7
+#define MYSERIAL_INST1_RTS  PB_6
 // SPI
-#define SPI_MOSI    D11
-#define SPI_MISO    D12
-#define SPI_SCLK    D13
-#define SPI_SSEL    D10
+#define MYSPI_INST1_MOSI    D11
+#define MYSPI_INST1_MISO    D12
+#define MYSPI_INST1_SCLK    D13
+#define MYSPI_INST1_SSEL    D10
 // I2C
-#define I2C_SDA     D14
-#define I2C_SCL     D15
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
 // InterruptIn
-#define BTN1        SW1
-#define BTN2        SW2
+#define MYBTN_INST1         SW1
+#define MYBTN_INST2         SW2
 
 #elif defined(TARGET_NUMAKER_PFM_M2351)
 //Serial
-#define SERIAL_RX   D13
-#define SERIAL_TX   D10
-#define SERIAL_CTS  D12
-#define SERIAL_RTS  D11
+#define MYSERIAL_INST1_RX   D13
+#define MYSERIAL_INST1_TX   D10
+#define MYSERIAL_INST1_CTS  D12
+#define MYSERIAL_INST1_RTS  D11
 // SPI
-#define SPI_MOSI    D11
-#define SPI_MISO    D12
-#define SPI_SCLK    D13
-#define SPI_SSEL    D10 
-#define MYCONF_SPI_tSHSL_US         10
+#define MYSPI_INST1_MOSI    D11
+#define MYSPI_INST1_MISO    D12
+#define MYSPI_INST1_SCLK    D13
+#define MYSPI_INST1_SSEL    D10 
+#define MYCONF_SPI_tSHSL_US 10
 // I2C
-#define I2C_SDA     D9
-#define I2C_SCL     D8
+#define MYI2C_INST1_SDA     D9
+#define MYI2C_INST1_SCL     D8
 // InterruptIn
-#define BTN1        SW2
-#define BTN2        SW3
+#define MYBTN_INST1         SW2
+#define MYBTN_INST2         SW3
 
 #elif defined(TARGET_NUMAKER_M252KG)
 //Serial
-#define SERIAL_RX   D13
-#define SERIAL_TX   D10
-#define SERIAL_CTS  D12
-#define SERIAL_RTS  D11
+#define MYSERIAL_INST1_RX   D13
+#define MYSERIAL_INST1_TX   D10
+#define MYSERIAL_INST1_CTS  D12
+#define MYSERIAL_INST1_RTS  D11
 // SPI
-#define SPI_MOSI    D11
-#define SPI_MISO    D12
-#define SPI_SCLK    D13
-#define SPI_SSEL    D10 
-#define MYCONF_SPI_tSHSL_US         10
+#define MYSPI_INST1_MOSI    D11
+#define MYSPI_INST1_MISO    D12
+#define MYSPI_INST1_SCLK    D13
+#define MYSPI_INST1_SSEL    D10 
+#define MYCONF_SPI_tSHSL_US 10
 // I2C
-#define I2C_SDA     D9
-#define I2C_SCL     D8
+#define MYI2C_INST1_SDA     D9
+#define MYI2C_INST1_SCL     D8
 // InterruptIn
 // No buttons on-board
 
@@ -238,7 +238,7 @@ static volatile int my_serial_event = 0;
 
 static void test_serial_tx_attach(void)
 {
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     
     Callback<void()> callback(&serial_tx_callback, &my_serial);
     my_serial.attach(callback, mbed::SerialBase::TxIrq);
@@ -252,7 +252,7 @@ static void test_serial_tx_attach(void)
 static void test_serial_rx_attach(void)
 {
     // NOTE: Use MyRawSerial instead of Serial to be able to call putc/getc in interrupt context.
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     
     Callback<void()> callback(&serial_rx_callback, &my_serial);
     my_serial.attach(callback, mbed::SerialBase::RxIrq);
@@ -265,7 +265,7 @@ static void test_serial_rx_attach(void)
 static void test_serial_txrx_attach(void)
 {
     // NOTE: Use MyRawSerial instead of Serial to be able to call putc/getc in interrupt context.
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     
     Callback<void()> tx_callback(&serial_tx_callback, &my_serial);
     Callback<void()> rx_callback(&serial_rx_callback, &my_serial);  
@@ -291,7 +291,7 @@ static void serial_rx_callback(MyRawSerial *serial)
 
 static void test_serial_tx_async(void)
 {   
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
@@ -320,7 +320,7 @@ REPEAT:
 
 static void test_serial_rx_async(void)
 {   
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
@@ -365,7 +365,7 @@ REPEAT:
 
 void test_serial_tx_async_n_tx_attach(void)
 {
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     
     Callback<void()> callback(&serial_tx_callback, &my_serial);
     my_serial.attach(callback, mbed::SerialBase::TxIrq);
@@ -422,7 +422,7 @@ void test_serial_rtscts_master(void)
     printf("Press any char to start...\r\n");
     getchar();
 
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
     
@@ -434,7 +434,7 @@ void test_serial_rtscts_master(void)
     my_serial.set_dma_usage_tx(DMA_USAGE_ALWAYS);
 #endif
     
-    my_serial.set_flow_control(MyRawSerial::RTSCTS, SERIAL_RTS, SERIAL_CTS);
+    my_serial.set_flow_control(MyRawSerial::RTSCTS, MYSERIAL_INST1_RTS, MYSERIAL_INST1_CTS);
 
     my_serial.write((const uint8_t *) serial_buf_tx, sizeof (serial_buf_tx) - 1, event_callback, SERIAL_EVENT_TX_ALL);
     sem_tokens = my_serial_sem.try_acquire_for(10s);
@@ -457,7 +457,7 @@ void test_serial_rtscts_slave(void)
     printf("Press any char to start...\r\n");
     getchar();
 
-    static MyRawSerial my_serial(SERIAL_TX, SERIAL_RX);
+    static MyRawSerial my_serial(MYSERIAL_INST1_TX, MYSERIAL_INST1_RX);
     event_callback_t event_callback(serial_async_callback);
     int32_t sem_tokens;
 
@@ -467,7 +467,7 @@ void test_serial_rtscts_slave(void)
     my_serial.set_dma_usage_rx(DMA_USAGE_ALWAYS);
 #endif
 
-    my_serial.set_flow_control(MyRawSerial::RTSCTS, SERIAL_RTS, SERIAL_CTS);
+    my_serial.set_flow_control(MyRawSerial::RTSCTS, MYSERIAL_INST1_RTS, MYSERIAL_INST1_CTS);
 
     while (1) {
         sem_tokens = 0;
@@ -529,10 +529,10 @@ void serial_async_callback(int event)
 static void test_spi_master(void)
 {
 #if MYCONF_SPI_AUTOSS
-    static SPI spi_master(SPI_MOSI, SPI_MISO, SPI_SCLK, SPI_SSEL);
+    static SPI spi_master(MYSPI_INST1_MOSI, MYSPI_INST1_MISO, MYSPI_INST1_SCLK, MYSPI_INST1_SSEL);
 #else
-    static SPI spi_master(SPI_MOSI, SPI_MISO, SPI_SCLK);
-    static DigitalOut cs(SPI_SSEL);
+    static SPI spi_master(MYSPI_INST1_MOSI, MYSPI_INST1_MISO, MYSPI_INST1_SCLK);
+    static DigitalOut cs(MYSPI_INST1_SSEL);
 #endif
 
     int n_round = 0;
@@ -582,10 +582,10 @@ REPEAT:
 static void test_spi_master_async(void)
 {
 #if MYCONF_SPI_AUTOSS
-    static SPI spi_master(SPI_MOSI, SPI_MISO, SPI_SCLK, SPI_SSEL);
+    static SPI spi_master(MYSPI_INST1_MOSI, MYSPI_INST1_MISO, MYSPI_INST1_SCLK, MYSPI_INST1_SSEL);
 #else
-    static SPI spi_master(SPI_MOSI, SPI_MISO, SPI_SCLK);
-    static DigitalOut cs(SPI_SSEL);
+    static SPI spi_master(MYSPI_INST1_MOSI, MYSPI_INST1_MISO, MYSPI_INST1_SCLK);
+    static DigitalOut cs(MYSPI_INST1_SSEL);
 #endif
 
     int n_round = 0;
@@ -603,11 +603,11 @@ static void test_spi_master_async(void)
     /* NOTE: When NUC472/M2351 runs as SPI slave, it cannot handle transmit/receive data in time.
      *       To fix it, SPI master is configured to enlarge suspend interval between
      *       transmit/receive data frames. */
-    uint32_t spi_mosi = pinmap_peripheral(SPI_MOSI, PinMap_SPI_MOSI);
-    uint32_t spi_miso = pinmap_peripheral(SPI_MISO, PinMap_SPI_MISO);
-    uint32_t spi_sclk = pinmap_peripheral(SPI_SCLK, PinMap_SPI_SCLK);
+    uint32_t spi_mosi = pinmap_peripheral(MYSPI_INST1_MOSI, PinMap_SPI_MOSI);
+    uint32_t spi_miso = pinmap_peripheral(MYSPI_INST1_MISO, PinMap_SPI_MISO);
+    uint32_t spi_sclk = pinmap_peripheral(MYSPI_INST1_SCLK, PinMap_SPI_SCLK);
 #if MYCONF_SPI_AUTOSS
-    uint32_t spi_ssel = pinmap_peripheral(SPI_SSEL, PinMap_SPI_SSEL);
+    uint32_t spi_ssel = pinmap_peripheral(MYSPI_INST1_SSEL, PinMap_SPI_SSEL);
 #else
     uint32_t spi_ssel = NC;
 #endif
@@ -683,7 +683,7 @@ static void spi_master_async_callback(int event)
 
 static void test_spi_slave(void)
 {
-    static SPISlave spi_slave(SPI_MOSI, SPI_MISO, SPI_SCLK, SPI_SSEL);
+    static SPISlave spi_slave(MYSPI_INST1_MOSI, MYSPI_INST1_MISO, MYSPI_INST1_SCLK, MYSPI_INST1_SSEL);
     int resp = -1;
 
     spi_slave.format(MYCONF_BITS_TRAN_UNIT_T);              // n bits per SPI frame
@@ -715,7 +715,7 @@ static void test_spi_slave(void)
 
 static void test_i2c_master(void)
 {
-    static I2C i2c_master(I2C_SDA, I2C_SCL);
+    static I2C i2c_master(MYI2C_INST1_SDA, MYI2C_INST1_SCL);
     
     int n_round = 0;
     
@@ -773,7 +773,7 @@ REPEAT:
 
 static void test_i2c_master_async(void)
 {
-    static I2C i2c_master(I2C_SDA, I2C_SCL);
+    static I2C i2c_master(MYI2C_INST1_SDA, MYI2C_INST1_SCL);
     
     int n_round = 0;
 
@@ -828,7 +828,7 @@ static void i2c_master_async_callback(int event)
 
 static void test_i2c_slave(void)
 {
-    static I2CSlave i2c_slave(I2C_SDA, I2C_SCL);
+    static I2CSlave i2c_slave(MYI2C_INST1_SDA, MYI2C_INST1_SCL);
 
     i2c_slave.address(MYCONF_I2C_ADDR);
 
@@ -850,11 +850,11 @@ static void test_i2c_slave(void)
 
 #endif  // #if DEVICE_I2C
 
-#if defined(BTN1) && defined(BTN2)
+#if defined(MYBTN_INST1) && defined(MYBTN_INST2)
 static void test_interruptin(void)
 {
-    static InterruptIn int_in1(BTN1);
-    static InterruptIn int_in2(BTN2);
+    static InterruptIn int_in1(MYBTN_INST1);
+    static InterruptIn int_in2(MYBTN_INST2);
 
     //TESTTEST
     //int_in1.mode(Quasi);
