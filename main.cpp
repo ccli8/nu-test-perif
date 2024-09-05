@@ -85,6 +85,27 @@
 #define MYBTN_INST1         SW2
 #define MYBTN_INST2         SW3
 
+#elif defined(TARGET_NUMAKER_IOT_M467)
+//Serial
+#define MYSERIAL_INST1_RX   D13
+#define MYSERIAL_INST1_TX   D10
+#define MYSERIAL_INST1_CTS  D12
+#define MYSERIAL_INST1_RTS  D11
+// SPI
+#define MYSPI_INST1_MOSI    D11
+#define MYSPI_INST1_MISO    D12
+#define MYSPI_INST1_SCLK    D13
+#define MYSPI_INST1_SSEL    D10
+#define MYCONF_SPI_tSHSL_US 10
+// I2C
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
+#define MYI2C_INST2_SDA     D0
+#define MYI2C_INST2_SCL     D1
+// InterruptIn
+#define MYBTN_INST1         BUTTON1
+#define MYBTN_INST2         BUTTON2
+
 #elif defined(TARGET_NUMAKER_PFM_NANO130)
 //Serial
 #define MYSERIAL_INST1_RX   D0
