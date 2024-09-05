@@ -79,8 +79,10 @@
 #endif
 #define MYCONF_SPI_tSHSL_US 10
 // I2C
-#define MYI2C_INST1_SDA     D9
-#define MYI2C_INST1_SCL     D8
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
+#define MYI2C_INST2_SDA     D11
+#define MYI2C_INST2_SCL     D12
 // InterruptIn
 #define MYBTN_INST1         SW2
 #define MYBTN_INST2         SW3
@@ -137,8 +139,10 @@
 #define MYSPI_INST1_SSEL    D10 
 #define MYCONF_SPI_tSHSL_US 10
 // I2C
-#define MYI2C_INST1_SDA     D9
-#define MYI2C_INST1_SCL     D8
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
+#define MYI2C_INST2_SDA     D7
+#define MYI2C_INST2_SCL     D6
 // InterruptIn
 #define MYBTN_INST1         SW2
 #define MYBTN_INST2         SW3
@@ -156,8 +160,10 @@
 #define MYSPI_INST1_SSEL    D10 
 #define MYCONF_SPI_tSHSL_US 10
 // I2C
-#define MYI2C_INST1_SDA     D9
-#define MYI2C_INST1_SCL     D8
+#define MYI2C_INST1_SDA     D14
+#define MYI2C_INST1_SCL     D15
+#define MYI2C_INST2_SDA     D7
+#define MYI2C_INST2_SCL     D6
 // InterruptIn
 // No buttons on-board
 
@@ -204,6 +210,11 @@ static void test_i2c_master(void);
 static void test_i2c_master_async(void);
 static void i2c_master_async_callback(int event);
 static void test_i2c_slave(void);
+static void test_i2c_loopback(void);
+static void i2c_master_run(I2C &i2c_master);
+static void i2c_master_run(I2C *i2c_master_p);
+static void i2c_slave_run(I2CSlave &i2c_slave);
+static void i2c_slave_run(I2CSlave *i2c_slave_p);
 static void test_interruptin(void);
 static void my_gpio_irq_rise(void);
 static void my_gpio_irq_fall(void);
@@ -235,7 +246,7 @@ int MY_BUF_POS = 0;
 
 int main()
 {
-    test_serial_tx_attach();
+    //test_serial_tx_attach();
     //test_serial_rx_attach();
     //test_serial_txrx_attach();
     //test_serial_tx_async();
@@ -249,6 +260,7 @@ int main()
     //test_i2c_master();
     //test_i2c_master_async();
     //test_i2c_slave();
+    test_i2c_loopback();
     //test_interruptin();
 }
 
@@ -743,59 +755,8 @@ static void test_spi_slave(void)
 static void test_i2c_master(void)
 {
     static I2C i2c_master(MYI2C_INST1_SDA, MYI2C_INST1_SCL);
-    
-    int n_round = 0;
-    
-    // Fill in transmit buffer
-    for (int i = 0; i < sizeof (i2c_test_ctx.master.buf) / sizeof (i2c_test_ctx.master.buf[0]); i ++) {
-        i2c_test_ctx.master.buf[i] = i;
-    }
 
-REPEAT:
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf, sizeof (i2c_test_ctx.master.buf), 1);
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
-    
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
-    
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    
-    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
-    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
-    
-    char *buf_pos = i2c_test_ctx.master.buf;
-    char *buf_end = i2c_test_ctx.master.buf + sizeof (i2c_test_ctx.master.buf) / sizeof (i2c_test_ctx.master.buf[0]);
-    char *buf2_pos = i2c_test_ctx.master.buf2;
-    int data;
-    int data2;
-    while (buf_pos < buf_end) {
-        data = *buf_pos ++;
-        data2 = *buf2_pos ++;
-        if (data2 != (data + 5)) {
-            printf("%s Round %d FAILED\r\n", __func__, n_round ++);
-            while (1);
-        }
-    }
-
-    printf("%s Round %d OK\r\n", __func__, n_round ++);
-    goto REPEAT;
+    i2c_master_run(i2c_master);
 }
 
 static void test_i2c_master_async(void)
@@ -857,6 +818,95 @@ static void test_i2c_slave(void)
 {
     static I2CSlave i2c_slave(MYI2C_INST1_SDA, MYI2C_INST1_SCL);
 
+    i2c_slave_run(i2c_slave);
+}
+
+#if defined(MYI2C_INST2_SDA) && defined(MYI2C_INST2_SCL)
+static void test_i2c_loopback(void)
+{
+    static I2C i2c_master(MYI2C_INST1_SDA, MYI2C_INST1_SCL);
+    static I2CSlave i2c_slave(MYI2C_INST2_SDA, MYI2C_INST2_SCL);
+
+    static Thread thread_i2c_master;
+    static Thread thread_i2c_slave;
+
+    /* Per test, let I2C slave go first then I2C master, or failed */
+    thread_i2c_slave.start(callback(i2c_slave_run, &i2c_slave));
+    ThisThread::sleep_for(100ms);
+    thread_i2c_master.start(callback(i2c_master_run, &i2c_master));
+
+    while (1) {
+        ThisThread::sleep_for(5s);
+    }
+
+    thread_i2c_master.join();
+    thread_i2c_slave.join();
+}
+#endif
+
+static void i2c_master_run(I2C &i2c_master)
+{
+    int n_round = 0;
+    
+    // Fill in transmit buffer
+    for (int i = 0; i < sizeof (i2c_test_ctx.master.buf) / sizeof (i2c_test_ctx.master.buf[0]); i ++) {
+        i2c_test_ctx.master.buf[i] = i;
+    }
+
+REPEAT:
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf, sizeof (i2c_test_ctx.master.buf), 1);
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
+    
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2), 1);
+    
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    
+    i2c_master.write(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    memset(i2c_test_ctx.master.buf2, 0xFF, sizeof (i2c_test_ctx.master.buf2));
+    i2c_master.read(MYCONF_I2C_ADDR, i2c_test_ctx.master.buf2, sizeof (i2c_test_ctx.master.buf2));
+    
+    char *buf_pos = i2c_test_ctx.master.buf;
+    char *buf_end = i2c_test_ctx.master.buf + sizeof (i2c_test_ctx.master.buf) / sizeof (i2c_test_ctx.master.buf[0]);
+    char *buf2_pos = i2c_test_ctx.master.buf2;
+    int data;
+    int data2;
+    while (buf_pos < buf_end) {
+        data = *buf_pos ++;
+        data2 = *buf2_pos ++;
+        if (data2 != (data + 5)) {
+            printf("%s Round %d FAILED\r\n", __func__, n_round ++);
+            while (1);
+        }
+    }
+
+    printf("%s Round %d OK\r\n", __func__, n_round ++);
+    goto REPEAT;
+}
+
+static void i2c_master_run(I2C *i2c_master_p)
+{
+    i2c_master_run(*i2c_master_p);
+}
+
+static void i2c_slave_run(I2CSlave &i2c_slave)
+{
     i2c_slave.address(MYCONF_I2C_ADDR);
 
     while (1) {
@@ -873,6 +923,11 @@ static void test_i2c_slave(void)
                 break;
         }
     }
+}
+
+static void i2c_slave_run(I2CSlave *i2c_slave_p)
+{
+    i2c_slave_run(*i2c_slave_p);
 }
 
 #endif  // #if DEVICE_I2C
