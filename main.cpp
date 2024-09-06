@@ -58,7 +58,8 @@
 #define MYBTN_INST1         SW2
 #define MYBTN_INST2         SW3
 
-#elif defined(TARGET_NUMAKER_PFM_M487)
+#elif defined(TARGET_NUMAKER_PFM_M487)  \
+    || defined(TARGET_NUMAKER_IOT_M487)
 //Serial
 #define MYSERIAL_INST1_RX   D13
 #define MYSERIAL_INST1_TX   D10
